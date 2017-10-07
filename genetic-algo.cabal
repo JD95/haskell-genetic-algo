@@ -27,4 +27,6 @@ executable genetic-algo
                      , recursion-schemes
                      , free
                      , vector
+                     , vector-algorithms
+                     , parallel
 		     
