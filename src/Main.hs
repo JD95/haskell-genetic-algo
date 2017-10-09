@@ -44,7 +44,7 @@ withinRange g (TData d1 d2 _)
         ] 
 
 calcFit :: Vector TData -> Gene -> (Gene, Double)
-calcFit tData gene = (gene, sum . fmap (f gene) $ tData) 
+calcFit tData gene = (gene, sum . inParallel $ fmap (f gene) tData) 
  where f :: Gene -> TData -> Double
        f g t@(TData d1 d2 profit)
          | withinRange g t = if e g then -1 * profit else profit
@@ -110,7 +110,7 @@ train select tData
              . pairOff . V.toList 
 
 parseData :: Text -> Either String [TData]
-parseData = sequence . fmap parseLine . T.lines
+parseData = sequence . inParallel . fmap parseLine . T.lines
   where parseLine = parse <=< sequence
                   . fmap (readEither @Double)
                   . fmap toS . T.splitOn "\t"
@@ -120,8 +120,8 @@ parseData = sequence . fmap parseLine . T.lines
 runAlgo :: Vector TData -> IO ()
 runAlgo tdata = do
   g <- getStdGen
-  popSize <- pure 2
-  gens <- pure 2
+  popSize <- pure 100 
+  gens <- pure 10 
   let result = flip evalState g $ do
         genes <- initPop popSize 
         foldr1 (<=<) (replicate gens (train elitist tdata)) genes
